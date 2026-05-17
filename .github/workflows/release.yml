@@ -481,7 +481,32 @@ jobs:
       - name: Build CLI package
         run: bun --filter=snocode run build
 
+      - id: npm_package
+        name: Check npm package availability
+        shell: bash
+        env:
+          PACKAGE_NAME: snocode
+          NPM_ALLOW_PACKAGE_CREATE: ${{ vars.NPM_ALLOW_PACKAGE_CREATE }}
+        run: |
+          set -euo pipefail
+
+          if npm view "$PACKAGE_NAME" version --registry=https://registry.npmjs.org >/tmp/npm-package-version 2>/tmp/npm-package-error; then
+            echo "NPM package $PACKAGE_NAME exists; publishing release version."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${NPM_ALLOW_PACKAGE_CREATE:-}" == "true" ]]; then
+            echo "::notice::NPM package $PACKAGE_NAME is not visible, but NPM_ALLOW_PACKAGE_CREATE=true; attempting first publish."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "::warning::NPM package $PACKAGE_NAME is not visible on the public registry. Skipping npm publish; set NPM_ALLOW_PACKAGE_CREATE=true after configuring a token that can create it."
+          echo "publish=false" >> "$GITHUB_OUTPUT"
+
       - name: Publish CLI package
+        if: steps.npm_package.outputs.publish == 'true'
         run: node apps/server/scripts/cli.ts publish --tag "${{ needs.preflight.outputs.cli_dist_tag }}" --app-version "${{ needs.preflight.outputs.version }}" --verbose
 
   release:
