@@ -681,8 +681,8 @@ jobs:
           set -euo pipefail
 
           if [[ -z "${VERCEL_TOKEN:-}" || -z "${VERCEL_ORG_ID:-}" || -z "${VERCEL_PROJECT_ID:-}" ]]; then
-            echo "Missing one or more required Vercel secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID." >&2
-            exit 1
+            echo "::notice::Missing one or more Vercel secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID. Skipping hosted web app deploy."
+            exit 0
           fi
 
           router_url="${SNOCODE_WEB_ROUTER_URL:-https://app.snowcode.io}"
