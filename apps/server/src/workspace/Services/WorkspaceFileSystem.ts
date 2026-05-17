@@ -1,0 +1,103 @@
+/**
+ * WorkspaceFileSystem - Effect service contract for workspace file mutations.
+ *
+ * Owns workspace-root-relative file write operations and their associated
+ * safety checks and cache invalidation hooks.
+ *
+ * @module WorkspaceFileSystem
+ */
+import * as Schema from "effect/Schema";
+import * as Context from "effect/Context";
+import type * as Effect from "effect/Effect";
+
+import type {
+  ProjectCreateFileInput,
+  ProjectCreateFileResult,
+  ProjectCreateFolderInput,
+  ProjectCreateFolderResult,
+  ProjectListDirectoryInput,
+  ProjectListDirectoryResult,
+  ProjectReadFileInput,
+  ProjectReadFileResult,
+  ProjectWriteFileInput,
+  ProjectWriteFileResult,
+} from "@snocode/contracts";
+import { WorkspacePathOutsideRootError } from "./WorkspacePaths.ts";
+
+export class WorkspaceFileSystemError extends Schema.TaggedErrorClass<WorkspaceFileSystemError>()(
+  "WorkspaceFileSystemError",
+  {
+    cwd: Schema.String,
+    relativePath: Schema.optional(Schema.String),
+    operation: Schema.String,
+    detail: Schema.String,
+    code: Schema.optional(Schema.String),
+    cause: Schema.optional(Schema.Defect),
+  },
+) {}
+
+/**
+ * WorkspaceFileSystemShape - Service API for workspace-relative file operations.
+ */
+export interface WorkspaceFileSystemShape {
+  /**
+   * List the direct children of a workspace directory.
+   */
+  readonly listDirectory: (
+    input: ProjectListDirectoryInput,
+  ) => Effect.Effect<
+    ProjectListDirectoryResult,
+    WorkspaceFileSystemError | WorkspacePathOutsideRootError
+  >;
+
+  /**
+   * Read a text file relative to the workspace root.
+   */
+  readonly readFile: (
+    input: ProjectReadFileInput,
+  ) => Effect.Effect<
+    ProjectReadFileResult,
+    WorkspaceFileSystemError | WorkspacePathOutsideRootError
+  >;
+
+  /**
+   * Create a new file relative to the workspace root without overwriting.
+   */
+  readonly createFile: (
+    input: ProjectCreateFileInput,
+  ) => Effect.Effect<
+    ProjectCreateFileResult,
+    WorkspaceFileSystemError | WorkspacePathOutsideRootError
+  >;
+
+  /**
+   * Create a new folder relative to the workspace root without overwriting.
+   */
+  readonly createFolder: (
+    input: ProjectCreateFolderInput,
+  ) => Effect.Effect<
+    ProjectCreateFolderResult,
+    WorkspaceFileSystemError | WorkspacePathOutsideRootError
+  >;
+
+  /**
+   * Write a file relative to the workspace root.
+   *
+   * Creates parent directories as needed and rejects paths that escape the
+   * workspace root.
+   */
+  readonly writeFile: (
+    input: ProjectWriteFileInput,
+  ) => Effect.Effect<
+    ProjectWriteFileResult,
+    WorkspaceFileSystemError | WorkspacePathOutsideRootError
+  >;
+}
+
+/**
+ * WorkspaceFileSystem - Service tag for workspace file operations.
+ */
+export class WorkspaceFileSystem extends Context.Service<
+  WorkspaceFileSystem,
+  WorkspaceFileSystemShape
+>()("snocode/workspace/Services/WorkspaceFileSystem") {}
