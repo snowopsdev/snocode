@@ -1,6 +1,6 @@
 {
   "name": "@snocode/desktop",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "private": true,
   "type": "module",
   "main": "dist-electron/main.cjs",
