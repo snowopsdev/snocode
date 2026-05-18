@@ -1,6 +1,5 @@
 import type {
   DesktopAppBranding,
-  DesktopAppStageLabel,
   DesktopRuntimeArch,
   DesktopRuntimeInfo,
 } from "@snocode/contracts";
@@ -85,12 +84,12 @@ const APP_BASE_NAME = "Snocode";
 function resolveDesktopAppStageLabel(input: {
   readonly isDevelopment: boolean;
   readonly appVersion: string;
-}): DesktopAppStageLabel {
+}): DesktopAppBranding["stageLabel"] {
   if (input.isDevelopment) {
     return "Dev";
   }
 
-  return isNightlyDesktopVersion(input.appVersion) ? "Nightly" : "Alpha";
+  return isNightlyDesktopVersion(input.appVersion) ? "Nightly" : undefined;
 }
 
 function resolveDesktopAppBranding(input: {
@@ -100,8 +99,8 @@ function resolveDesktopAppBranding(input: {
   const stageLabel = resolveDesktopAppStageLabel(input);
   return {
     baseName: APP_BASE_NAME,
-    stageLabel,
-    displayName: `${APP_BASE_NAME} (${stageLabel})`,
+    ...(stageLabel ? { stageLabel } : {}),
+    displayName: stageLabel ? `${APP_BASE_NAME} (${stageLabel})` : APP_BASE_NAME,
   };
 }
 

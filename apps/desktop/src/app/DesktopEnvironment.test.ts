@@ -98,6 +98,10 @@ describe("DesktopEnvironment", () => {
       assert.equal(environment.stateDir, "/tmp/snocode/userdata");
       assert.equal(environment.logDir, "/tmp/snocode/userdata/logs");
       assert.equal(environment.serverSettingsPath, "/tmp/snocode/userdata/settings.json");
+      assert.deepEqual(environment.branding, {
+        baseName: "Snocode",
+        displayName: "Snocode",
+      });
     }),
   );
 

@@ -54,4 +54,13 @@ describe("branding", () => {
     expect(branding.HOSTED_APP_CHANNEL).toBeNull();
     expect(branding.HOSTED_APP_CHANNEL_LABEL).toBeNull();
   });
+
+  it("uses production branding by default outside dev builds", async () => {
+    vi.stubEnv("DEV", false);
+
+    const branding = await import("./branding");
+
+    expect(branding.APP_STAGE_LABEL).toBeNull();
+    expect(branding.APP_DISPLAY_NAME).toBe("Snocode");
+  });
 });
